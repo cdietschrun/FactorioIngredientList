@@ -33,8 +33,9 @@ styles["il_deep_frame"] = {
 data:extend({
     {
         type = "custom-input",
-        name = "il_toggle_interface",
-        key_sequence = "CONTROL + I",
+        name = "iw_toggle",
+        key_sequence = "CONTROL + W",
+        include_selected_prototype = true,
         order = "a"
     }
 })

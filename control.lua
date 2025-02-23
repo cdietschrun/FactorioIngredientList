@@ -25,7 +25,6 @@ local function build_interface(player)
     local screen_element = player.gui.screen
     local main_frame = screen_element.add{type="frame", name="il_main_frame", caption={"il.hello_world"}}
     main_frame.style.size = {385, 165}
-    main_frame.auto_center = true
 
     player.opened = main_frame
     player_storage.elements.main_frame = main_frame
@@ -63,9 +62,34 @@ local function toggle_interface(player)
     end
 end
 
-script.on_event("il_toggle_interface", function (event)
-    local player = game.get_player(event.player_index)
-    toggle_interface(player)
+script.on_event("iw_toggle", function (event)
+    game.print("input name: " .. event.input_name)
+    game.print("event name: " .. event.name)
+    if event.selected_prototype then
+        game.print("selected prototype name: " .. event.selected_prototype.name)
+        game.print("selected prototype base type: " .. event.selected_prototype.base_type)
+        game.print("selected prototype derived type: " .. event.selected_prototype.derived_type)
+        if event.selected_prototype.base_type == "recipe" then
+            game.print(game.get_player(event.player_index).character.get_item_count(event.selected_prototype.name))
+            local recipe = prototypes.recipe[event.selected_prototype.name]
+            game.print("recipe object_name: " .. recipe.object_name)
+            game.print("recipe name: " .. recipe.name)
+            game.print("recipe energy: " .. recipe.energy)
+            game.print("recipe # ingredients: " .. #recipe.ingredients)
+            for _, ingredient in ipairs(recipe.ingredients) do
+                game.print("ingredient type: " .. ingredient.type)
+                game.print("ingredient name: " .. ingredient.name)
+                game.print("ingredient amount: " .. ingredient.amount)
+                -- log(ingredient.amount)
+                -- log("hi chris")
+            end
+
+            local player = game.get_player(event.player_index)
+            toggle_interface(player)
+            game.print("char inventory empty: " .. tostring(player.character.get_main_inventory().is_empty()))
+            game.print("char inventory contents: " .. tostring(player.character.get_main_inventory().get_contents()[2].name))
+        end
+    end
 end)
 
 -- Make sure the intro cinematic of freeplay doesn't play every time we restart
@@ -84,6 +108,14 @@ script.on_init(function()
     end
 end)
 
+-- custom input prototype with selected prototype mode on, bind it to leftclick, when it triggers check if the crafting gui open, 
+-- then if it matches flag the player to be checked during the next tick (since custom input events fire before the game processes them for guis and such)
+-- and if during the next tick that item is not in the queue the player failed to craft it (assuming the recipe wasn't done within 1 tick)
+
+script.on_event(defines.events.on_pre_player_crafted_item, function (event)
+    game.print("pre_craft: "..event.recipe.name)    
+end)
+
 script.on_event(defines.events.on_player_created, function (event)
     local player = game.get_player(event.player_index)
 
@@ -91,6 +123,9 @@ script.on_event(defines.events.on_player_created, function (event)
 end)
 
 script.on_event(defines.events.on_gui_click, function (event)
+    game.print("event: " .. event.name)
+    game.print("element: " .. event.element.name)
+
     if event.element.name == "il_controls_toggle" then
         local player_storage = storage.players[event.player_index]
         player_storage.controls_active = not player_storage.controls_active
@@ -110,6 +145,9 @@ script.on_event(defines.events.on_gui_click, function (event)
         player_storage.selected_item = clicked_item_name
 
         build_sprite_buttons(player)
+    else
+        game.print("event: " .. event.name)
+        game.print("element: " .. event.element.name)
     end
 end)
 
