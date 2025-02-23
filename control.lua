@@ -33,9 +33,14 @@ local function build_interface(player, recipe)
     local main_frame = screen_element.add{type="frame", name="il_main_frame", caption={"il.hello_world"}}
     main_frame.style.size = {385, 165}
 
-    player.opened = main_frame
+    -- player.opened = main_frame
     player_storage.elements.main_frame = main_frame
 
+    -- type = "sprite-button", style = "frame_action_button",
+    -- name = "window_close_button", tooltip = {"gui.close-instruction"},
+    -- sprite = "utility/close",
+    -- handler = "hide",
+    main_frame.add{type="sprite-button", style="frame_action_button", name="il_close_button", tooltip = {"closers"}, sprite="utility/close"}
     local content_frame = main_frame.add{type="frame", name="content_frame", direction="vertical", style="il_content_frame"}
 
     local button_frame = content_frame.add{type="frame", name="button_frame", direction="horizontal", style="il_deep_frame"}
@@ -60,7 +65,6 @@ local function toggle_interface(player, recipe)
 end
 
 script.on_event("iw_toggle", function (event)
-
     game.print("input name: " .. event.input_name)
     game.print("event name: " .. event.name)
     
@@ -126,34 +130,37 @@ script.on_event(defines.events.on_player_created, function (event)
     initialize_storage(player)
 end)
 
--- script.on_event(defines.events.on_gui_click, function (event)
---     game.print("event: " .. event.name)
---     game.print("element: " .. event.element.name)
+script.on_event(defines.events.on_gui_click, function (event)
+    game.print("event: " .. event.name)
+    game.print("element: " .. event.element.name)
 
---     if event.element.name == "il_controls_toggle" then
---         local player_storage = storage.players[event.player_index]
---         player_storage.controls_active = not player_storage.controls_active
+    if event.element.name == "il_close_button" then
 
---         local controls_toggle = event.element
---         controls_toggle.caption = (player_storage.controls_active) and {"il.deactivate"} or {"il.activate"}
+        game.print("close")
+        -- local player_storage = storage.players[event.player_index]
+        toggle_interface(game.get_player(event.player_index))
+        -- player_storage.controls_active = not player_storage.controls_active
 
---         player_storage.elements.controls_slider.enabled = player_storage.controls_active
---         player_storage.elements.controls_textfield.enabled = player_storage.controls_active
+        -- local controls_toggle = event.element
+        -- controls_toggle.caption = (player_storage.controls_active) and {"il.deactivate"} or {"il.activate"}
 
---         build_sprite_buttons(player)
---     elseif event.element.tags.action == "il_select_button" then
---         local player = game.get_player(event.player_index)
---         local player_storage = storage.players[player.index]
+        -- player_storage.elements.controls_slider.enabled = player_storage.controls_active
+        -- player_storage.elements.controls_textfield.enabled = player_storage.controls_active
 
---         local clicked_item_name = event.element.tags.item_name
---         player_storage.selected_item = clicked_item_name
+        -- build_sprite_buttons(player)
+    -- elseif event.element.tags.action == "il_select_button" then
+    --     local player = game.get_player(event.player_index)
+    --     local player_storage = storage.players[player.index]
 
---         build_sprite_buttons(player)
---     else
---         game.print("event: " .. event.name)
---         game.print("element: " .. event.element.name)
---     end
--- end)
+    --     local clicked_item_name = event.element.tags.item_name
+    --     player_storage.selected_item = clicked_item_name
+
+    --     build_sprite_buttons(player)
+    -- else
+    --     game.print("event: " .. event.name)
+    --     game.print("element: " .. event.element.name)
+    end
+end)
 
 -- script.on_event(defines.events.on_gui_value_changed, function(event)
 --     if event.element.name == "il_controls_slider" then
