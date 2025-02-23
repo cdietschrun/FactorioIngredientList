@@ -18,6 +18,8 @@ local function build_sprite_buttons(player, recipe)
         game.print("ingredient name: " .. ingredient.name)
         game.print("ingredient amount: " .. ingredient.amount)
         button_table.add{type="sprite-button", sprite=("item/" .. ingredient.name), style="slot_button"}
+        local progress = game.players[1].character.get_item_count(ingredient.name) .. "/" .. ingredient.amount 
+        button_table.add{type="label", caption=progress}
     end
 end
 
@@ -44,7 +46,7 @@ local function build_interface(player, recipe)
     local content_frame = main_frame.add{type="frame", name="content_frame", direction="vertical", style="il_content_frame"}
 
     local button_frame = content_frame.add{type="frame", name="button_frame", direction="horizontal", style="il_deep_frame"}
-    local button_table = button_frame.add{type="table", name="button_table", column_count=#item_sprites, style="filter_slot_table"}
+    local button_table = button_frame.add{type="table", name="button_table", column_count=2, style="filter_slot_table", draw_horizontal_lines=true, draw_vertical_lines=true}
     player_storage.elements.button = button_table
 
     build_sprite_buttons(player, recipe)
