@@ -1,4 +1,6 @@
-local item_sprites = {"inserter", "transport-belt", "stone-furnace", "assembling-machine-3", "storage-chest", "sulfur", "utility-science-pack", "laser-turret"}
+local function clamp(value)
+    return math.max(0, math.min(1, value))
+end
 
 local function build_sprite_buttons(player, recipe)
     local player_storage = storage.players[player.index]
@@ -10,7 +12,7 @@ local function build_sprite_buttons(player, recipe)
     -- for i = 1, number_of_buttons do
     --     local sprite_name = item_sprites[i]
     --     local button_style = (sprite_name == player_storage.selected_item) and "yellow_slot_button" or "slot_button"
-    --     button_table.add{type="sprite-button", sprite=("item/" .. sprite_name), tags={action="il_select_button", item_name=sprite_name}, style=button_style}
+    --     button_table.add{type="sprite-button", sprite=("item/" .. sprite_name), tags={action="iw_select_button", item_name=sprite_name}, style=button_style}
     -- end
 
     for _, ingredient in ipairs(recipe.ingredients) do
@@ -18,8 +20,11 @@ local function build_sprite_buttons(player, recipe)
         game.print("ingredient name: " .. ingredient.name)
         game.print("ingredient amount: " .. ingredient.amount)
         button_table.add{type="sprite-button", sprite=("item/" .. ingredient.name), style="slot_button"}
-        local progress = game.players[1].character.get_item_count(ingredient.name) .. "/" .. ingredient.amount 
-        button_table.add{type="label", caption=progress}
+        local progress_str = game.get_player(player.index).character.get_item_count(ingredient.name) .. "/" .. ingredient.amount 
+        button_table.add{type="label", caption=progress_str}
+        local progress_value = 0
+        progress_value = clamp(game.get_player(player.index).character.get_item_count(ingredient.name) / ingredient.amount)
+        button_table.add{type="progressbar", value=progress_value}
     end
 end
 
@@ -32,21 +37,17 @@ local function build_interface(player, recipe)
     local player_storage = storage.players[player.index]
 
     local screen_element = player.gui.screen
-    local main_frame = screen_element.add{type="frame", name="il_main_frame", caption={"il.hello_world"}}
+    local main_frame = screen_element.add{type="frame", name="iw_main_frame", caption={"il.hello_world"}}
     main_frame.style.size = {385, 165}
 
     -- player.opened = main_frame
     player_storage.elements.main_frame = main_frame
 
-    -- type = "sprite-button", style = "frame_action_button",
-    -- name = "window_close_button", tooltip = {"gui.close-instruction"},
-    -- sprite = "utility/close",
-    -- handler = "hide",
-    main_frame.add{type="sprite-button", style="frame_action_button", name="il_close_button", tooltip = {"closers"}, sprite="utility/close"}
-    local content_frame = main_frame.add{type="frame", name="content_frame", direction="vertical", style="il_content_frame"}
+    main_frame.add{type="sprite-button", style="frame_action_button", name="iw_close_button", tooltip = {"closers"}, sprite="utility/close"}
+    local content_frame = main_frame.add{type="frame", name="content_frame", direction="vertical", style="iw_content_frame"}
 
-    local button_frame = content_frame.add{type="frame", name="button_frame", direction="horizontal", style="il_deep_frame"}
-    local button_table = button_frame.add{type="table", name="button_table", column_count=2, style="filter_slot_table", draw_horizontal_lines=true, draw_vertical_lines=true}
+    local button_frame = content_frame.add{type="frame", name="button_frame", direction="horizontal", style="iw_deep_frame"}
+    local button_table = button_frame.add{type="table", name="button_table", column_count=3, style="filter_slot_table", draw_horizontal_lines=true, draw_vertical_lines=true}
     player_storage.elements.button = button_table
 
     build_sprite_buttons(player, recipe)
@@ -96,8 +97,6 @@ script.on_event("iw_toggle", function (event)
 
             local player = game.get_player(event.player_index)
             toggle_interface(player, recipe)
-            -- game.print("char inventory empty: " .. tostring(player.character.get_main_inventory().is_empty()))
-            -- game.print("char inventory contents: " .. tostring(player.character.get_main_inventory().get_contents()[2].name))
         end
     end
 end)
@@ -136,7 +135,7 @@ script.on_event(defines.events.on_gui_click, function (event)
     game.print("event: " .. event.name)
     game.print("element: " .. event.element.name)
 
-    if event.element.name == "il_close_button" then
+    if event.element.name == "iw_close_button" then
 
         game.print("close")
         -- local player_storage = storage.players[event.player_index]
@@ -150,7 +149,7 @@ script.on_event(defines.events.on_gui_click, function (event)
         -- player_storage.elements.controls_textfield.enabled = player_storage.controls_active
 
         -- build_sprite_buttons(player)
-    -- elseif event.element.tags.action == "il_select_button" then
+    -- elseif event.element.tags.action == "iw_select_button" then
     --     local player = game.get_player(event.player_index)
     --     local player_storage = storage.players[player.index]
 
@@ -165,7 +164,7 @@ script.on_event(defines.events.on_gui_click, function (event)
 end)
 
 -- script.on_event(defines.events.on_gui_value_changed, function(event)
---     if event.element.name == "il_controls_slider" then
+--     if event.element.name == "iw_controls_slider" then
 --         local player = game.get_player(event.player_index)
 --         local player_storage = storage.players[player.index]
 
@@ -173,7 +172,7 @@ end)
 --         player_storage.button_count = new_button_count
 
 --         local controls_flow = player_storage.elements.main_frame.content_frame.controls_flow
---         controls_flow.il_controls_textfield.text = tostring(new_button_count)
+--         controls_flow.iw_controls_textfield.text = tostring(new_button_count)
 
 --         build_sprite_buttons(player)
 --     end
@@ -184,7 +183,7 @@ script.on_event(defines.events.on_player_removed, function (event)
 end)
 
 script.on_event(defines.events.on_gui_closed, function (event)
-    if event.element and event.element.name == "il_main_frame" then
+    if event.element and event.element.name == "iw_main_frame" then
         local player = game.get_player(event.player_index)
         toggle_interface(player)
     end
